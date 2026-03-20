@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Agent Portal</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      background: #f5f4f0;
+      min-height: 100vh;
+      color: #1a1a1a;
+    }
+
+    header {
+      background: #ffffff;
+      border-bottom: 1px solid #e0ddd6;
+      padding: 0 2rem;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand {
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #999;
+      font-family: 'Georgia', serif;
+    }
+
+    .user-bar {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .user-email {
+      font-size: 12px;
+      color: #aaa;
+    }
+
+    .logout-btn {
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #888;
+      background: none;
+      border: 1px solid #ddd;
+      border-radius: 3px;
+      padding: 5px 10px;
+      cursor: pointer;
+      font-family: 'Helvetica Neue', sans-serif;
+      transition: color 0.15s, border-color 0.15s;
+    }
+
+    .logout-btn:hover { color: #333; border-color: #999; }
+
+    main {
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 2.5rem 1rem;
+    }
+
+    h1 {
+      font-family: 'Georgia', serif;
+      font-size: 24px;
+      font-weight: normal;
+      color: #1a1a1a;
+      margin-bottom: 0.3rem;
+    }
+
+    .page-sub {
+      font-size: 13px;
+      color: #888;
+      margin-bottom: 2rem;
+    }
+
+    .search-wrap {
+      background: #fff;
+      border: 1px solid #e0ddd6;
+      border-radius: 4px;
+      padding: 1.25rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .search-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .search-row input {
+      flex: 1;
+      height: 40px;
+      padding: 0 14px;
+      font-size: 14px;
+      font-family: 'Helvetica Neue', sans-serif;
+      border: 1px solid #ddd;
+      border-radius: 3px;
+      background: #fafaf8;
+      color: #1a1a1a;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .search-row input:focus {
+      border-color: #999;
+      background: #fff;
+    }
+
+    .search-row button {
+      height: 40px;
+      padding: 0 20px;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      font-family: 'Helvetica Neue', sans-serif;
+      background: #1a1a1a;
+      color: #fff;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.15s;
+    }
+
+    .search-row button:hover { background: #333; }
+
+    .hint {
+      font-size: 12px;
+      color: #aaa;
+      margin-top: 10px;
+    }
+
+    .loading-indicator {
+      font-size: 12px;
+      color: #aaa;
+      margin-top: 10px;
+      display: none;
+    }
+
+    .result-count {
+      font-size: 12px;
+      color: #888;
+      margin-bottom: 10px;
+    }
+
+    .card {
+      background: #fff;
+      border: 1px solid #e0ddd6;
+      border-radius: 4px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 8px;
+      transition: border-color 0.15s;
+    }
+
+    .card:hover { border-color: #bbb; }
+
+    .card-name {
+      font-size: 15px;
+      font-weight: 500;
+      color: #1a1a1a;
+      margin-bottom: 10px;
+      font-family: 'Georgia', serif;
+    }
+
+    .card-fields {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px 24px;
+    }
+
+    .card-field { font-size: 12px; }
+
+    .field-label {
+      color: #aaa;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      font-size: 10px;
+      margin-bottom: 2px;
+    }
+
+    .field-val { color: #333; }
+
+    .empty-state {
+      text-align: center;
+      padding: 3rem 0;
+      font-size: 13px;
+      color: #aaa;
+    }
+
+    .no-results {
+      text-align: center;
+      padding: 2.5rem 0;
+      font-size: 13px;
+      color: #aaa;
+    }
+
+    .data-error {
+      font-size: 12px;
+      color: #c0392b;
+      background: #fdf0ef;
+      border: 1px solid #f5c6c2;
+      border-radius: 3px;
+      padding: 10px 12px;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="brand">Agent Portal</div>
+  <div class="user-bar">
+    <span class="user-email" id="user-email"></span>
+    <button class="logout-btn" onclick="handleLogout()">Sign out</button>
+  </div>
+</header>
+
+<main>
+  <h1>Customer search</h1>
+  <p class="page-sub">Search by customer name. Up to 10 results shown.</p>
+
+  <div class="search-wrap">
+    <div class="search-row">
+      <input
+        type="text"
+        id="search-input"
+        placeholder="Enter customer name…"
+        onkeydown="if(event.key==='Enter') doSearch()"
+      />
+      <button onclick="doSearch()">Search</button>
+    </div>
+    <div class="hint" id="hint">Enter a name above and press Search</div>
+    <div class="loading-indicator" id="loading">Loading data…</div>
+  </div>
+
+  <div id="results"></div>
+</main>
+
+<script>
+  const SUPABASE_URL = 'https://lvbbtxuzpfadlenrcdco.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx2YmJ0eHV6cGZhZGxlbnJjZGNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwMTM2NTksImV4cCI6MjA4OTU4OTY1OX0.nzT0bzvYxKD5SCaJRdhLz3uC4UYcyAJgN4pjjSs1zs4';
+
+  const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/1w_Rdt_mx1XvbwAo6C99JSey3yTjCZCUemZgG79iep-s/edit?gid=0#gid=0';
+
+  const { createClient } = supabase;
+  const client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  let rows = [];
+  let dataLoaded = false;
+
+  async function init() {
+    const { data: { session } } = await client.auth.getSession();
+    if (!session) {
+      window.location.href = 'login.html';
+      return;
+    }
+
+    document.getElementById('user-email').textContent = session.user.email;
+    loadSheetData();
+  }
+
+  async function loadSheetData() {
+    document.getElementById('loading').style.display = 'block';
+    document.getElementById('hint').style.display = 'none';
+
+    try {
+      const res = await fetch(SHEET_CSV_URL);
+      if (!res.ok) throw new Error('Failed to fetch sheet');
+      const text = await res.text();
+
+      const lines = text.trim().split('\n');
+      rows = lines.slice(1).map(line => {
+        const cols = line.split(',').map(c => c.replace(/^"|"$/g, '').trim());
+        return {
+          name:         cols[0] || '',
+          lastShipment: cols[1] || '',
+          state:        cols[2] || '',
+          city:         cols[3] || '',
+          terminal:     cols[4] || '',
+        };
+      }).filter(r => r.name);
+
+      dataLoaded = true;
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('hint').style.display = 'block';
+      document.getElementById('hint').textContent = 'Enter a name above and press Search';
+    } catch (e) {
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('results').innerHTML =
+        '<div class="data-error">Could not load sheet data. Check your CSV URL and make sure the sheet is published.</div>';
+    }
+  }
+
+  function doSearch() {
+    const q = document.getElementById('search-input').value.trim();
+    const resultsEl = document.getElementById('results');
+    const hint = document.getElementById('hint');
+
+    if (!q) {
+      hint.textContent = 'Enter a name above and press Search';
+      resultsEl.innerHTML = '';
+      return;
+    }
+
+    if (!dataLoaded) {
+      hint.textContent = 'Still loading data, please wait…';
+      return;
+    }
+
+    const matched = rows
+      .filter(r => r.name.toLowerCase().includes(q.toLowerCase()))
+      .slice(0, 10);
+
+    hint.textContent = '';
+
+    if (matched.length === 0) {
+      resultsEl.innerHTML = '<div class="no-results">No customers found matching "' + escHtml(q) + '".</div>';
+      return;
+    }
+
+    const cap = matched.length === 10 ? ' &nbsp;·&nbsp; showing first 10' : '';
+    resultsEl.innerHTML =
+      '<div class="result-count">' + matched.length + ' result' + (matched.length !== 1 ? 's' : '') + cap + '</div>' +
+      matched.map(r => `
+        <div class="card">
+          <div class="card-name">${escHtml(r.name)}</div>
+          <div class="card-fields">
+            <div class="card-field">
+              <div class="field-label">Last shipment</div>
+              <div class="field-val">${escHtml(r.lastShipment) || '—'}</div>
+            </div>
+            <div class="card-field">
+              <div class="field-label">State</div>
+              <div class="field-val">${escHtml(r.state) || '—'}</div>
+            </div>
+            <div class="card-field">
+              <div class="field-label">City</div>
+              <div class="field-val">${escHtml(r.city) || '—'}</div>
+            </div>
+            <div class="card-field">
+              <div class="field-label">Terminal</div>
+              <div class="field-val">${escHtml(r.terminal) || '—'}</div>
+            </div>
+          </div>
+        </div>`).join('');
+  }
+
+  function escHtml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  async function handleLogout() {
+    await client.auth.signOut();
+    window.location.href = 'login.html';
+  }
+
+  init();
+</script>
+</body>
+</html>

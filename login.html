@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Georgia', serif;
+      background: #f5f4f0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+
+    .card {
+      background: #ffffff;
+      border: 1px solid #e0ddd6;
+      border-radius: 4px;
+      padding: 2.5rem 2rem;
+      width: 100%;
+      max-width: 380px;
+    }
+
+    .brand {
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #999;
+      margin-bottom: 2rem;
+    }
+
+    h1 {
+      font-size: 22px;
+      font-weight: normal;
+      color: #1a1a1a;
+      margin-bottom: 0.4rem;
+    }
+
+    .subtitle {
+      font-size: 13px;
+      color: #888;
+      font-family: 'Helvetica Neue', sans-serif;
+      margin-bottom: 2rem;
+    }
+
+    label {
+      display: block;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #666;
+      font-family: 'Helvetica Neue', sans-serif;
+      margin-bottom: 6px;
+    }
+
+    input[type="email"],
+    input[type="password"] {
+      display: block;
+      width: 100%;
+      height: 40px;
+      padding: 0 12px;
+      font-size: 14px;
+      font-family: 'Helvetica Neue', sans-serif;
+      border: 1px solid #ddd;
+      border-radius: 3px;
+      background: #fafaf8;
+      color: #1a1a1a;
+      outline: none;
+      transition: border-color 0.15s;
+      margin-bottom: 1.25rem;
+    }
+
+    input:focus {
+      border-color: #999;
+      background: #fff;
+    }
+
+    button {
+      width: 100%;
+      height: 40px;
+      background: #1a1a1a;
+      color: #fff;
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      font-family: 'Helvetica Neue', sans-serif;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+      transition: background 0.15s;
+      margin-top: 0.5rem;
+    }
+
+    button:hover { background: #333; }
+    button:disabled { background: #999; cursor: not-allowed; }
+
+    .error {
+      font-size: 12px;
+      font-family: 'Helvetica Neue', sans-serif;
+      color: #c0392b;
+      background: #fdf0ef;
+      border: 1px solid #f5c6c2;
+      border-radius: 3px;
+      padding: 10px 12px;
+      margin-top: 1rem;
+      display: none;
+    }
+
+    .error.show { display: block; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="brand">Agent Portal</div>
+    <h1>Sign in</h1>
+    <p class="subtitle">Enter your email and password to continue.</p>
+
+    <label for="email">Email address</label>
+    <input type="email" id="email" placeholder="you@company.com" autocomplete="email" />
+
+    <label for="password">Password</label>
+    <input type="password" id="password" placeholder="••••••••" autocomplete="current-password" />
+
+    <button id="login-btn" onclick="handleLogin()">Sign in</button>
+
+    <div class="error" id="error-msg"></div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://lvbbtxuzpfadlenrcdco.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx2YmJ0eHV6cGZhZGxlbnJjZGNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwMTM2NTksImV4cCI6MjA4OTU4OTY1OX0.nzT0bzvYxKD5SCaJRdhLz3uC4UYcyAJgN4pjjSs1zs4';
+
+    const { createClient } = supabase;
+    const client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    async function handleLogin() {
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      const btn = document.getElementById('login-btn');
+      const err = document.getElementById('error-msg');
+
+      err.classList.remove('show');
+
+      if (!email || !password) {
+        err.textContent = 'Please enter your email and password.';
+        err.classList.add('show');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Signing in…';
+
+      const { error } = await client.auth.signInWithPassword({ email, password });
+
+      if (error) {
+        err.textContent = 'Incorrect email or password. Please try again.';
+        err.classList.add('show');
+        btn.disabled = false;
+        btn.textContent = 'Sign in';
+      } else {
+        window.location.href = 'dashboard.html';
+      }
+    }
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Enter') handleLogin();
+    });
+
+    (async () => {
+      const { data: { session } } = await client.auth.getSession();
+      if (session) window.location.href = 'dashboard.html';
+    })();
+  </script>
+</body>
+</html>
