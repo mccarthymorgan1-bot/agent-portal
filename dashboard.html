@@ -245,7 +245,7 @@
   const SUPABASE_URL = 'https://lvbbtxuzpfadlenrcdco.supabase.co';
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx2YmJ0eHV6cGZhZGxlbnJjZGNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwMTM2NTksImV4cCI6MjA4OTU4OTY1OX0.nzT0bzvYxKD5SCaJRdhLz3uC4UYcyAJgN4pjjSs1zs4';
 
-  const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQqlL_YZewOD3rHLtsY43Fd6FZt-OolUVhSlqoIaDhMuo5AglZeOFvXdZ-cSAOTIR4kyHsxmOA52LLo/pub?gid=0&single=true&output=csv';
+  const SHEET_CSV_URL = '/api/fetch-sheet';
 
   const { createClient } = supabase;
   const client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -273,8 +273,7 @@
       if (!res.ok) throw new Error('Failed to fetch sheet');
       const text = await res.text();
 
-      const lines = text.trim().split("\n");
-      console.log("CSV loaded, lines:", lines.length, "row1:", lines[0], "row2:", lines[1]);
+      const lines = text.trim().split('\n');
       rows = lines.slice(1).map(line => {
         const cols = line.split(',').map(c => c.replace(/^"|"$/g, '').trim());
         return {
