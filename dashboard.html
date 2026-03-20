@@ -245,7 +245,7 @@
   const SUPABASE_URL = 'https://lvbbtxuzpfadlenrcdco.supabase.co';
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx2YmJ0eHV6cGZhZGxlbnJjZGNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwMTM2NTksImV4cCI6MjA4OTU4OTY1OX0.nzT0bzvYxKD5SCaJRdhLz3uC4UYcyAJgN4pjjSs1zs4';
 
-  const SHEET_CSV_URL = 'https://corsproxy.io/?https://docs.google.com/spreadsheets/d/e/2PACX-1vQqlL_YZewOD3rHLtsY43Fd6FZt-OolUVhSlqoIaDhMuo5AglZeOFvXdZ-cSAOTIR4kyHsxmOA52LLo/pub?gid=0&single=true&output=csv';
+  const SHEET_CSV_URL = 'https://api.allorigins.win/raw?url=' + encodeURIComponent('https://docs.google.com/spreadsheets/d/e/2PACX-1vQqlL_YZewOD3rHLtsY43Fd6FZt-OolUVhSlqoIaDhMuo5AglZeOFvXdZ-cSAOTIR4kyHsxmOA52LLo/pub?gid=0&single=true&output=csv');
 
   const { createClient } = supabase;
   const client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
